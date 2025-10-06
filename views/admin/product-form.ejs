@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="fas fa-<%= action === 'add' ? 'plus' : 'edit' %>"></i> 
+                            <%= action === 'add' ? 'Add New Product' : 'Edit Product' %>
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <form action="/admin/products/<%= action === 'add' ? 'add' : 'edit/' + product.product_id %>" 
+                              method="POST" enctype="multipart/form-data">
+                            
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label for="product_name" class="form-label">Product Name *</label>
+                                    <input type="text" class="form-control" id="product_name" name="product_name" 
+                                           value="<%= product ? product.product_name : '' %>" required>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="product_status" class="form-label">Status *</label>
+                                    <select class="form-select" id="product_status" name="product_status" required>
+                                        <option value="1" <%= product && product.product_status == 1 ? 'selected' : '' %>>Active</option>
+                                        <option value="0" <%= product && product.product_status == 0 ? 'selected' : '' %>>Inactive</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="category_id" class="form-label">Category *</label>
+                                    <select class="form-select" id="category_id" name="category_id" required>
+                                        <option value="">Select Category</option>
+                                        <% categories.forEach(cat => { %>
+                                        <option value="<%= cat.category_id %>" 
+                                                <%= product && product.category_id == cat.category_id ? 'selected' : '' %>>
+                                            <%= cat.category_name %>
+                                        </option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="brand_id" class="form-label">Brand *</label>
+                                    <select class="form-select" id="brand_id" name="brand_id" required>
+                                        <option value="">Select Brand</option>
+                                        <% brands.forEach(brand => { %>
+                                        <option value="<%= brand.brand_id %>" 
+                                                <%= product && product.brand_id == brand.brand_id ? 'selected' : '' %>>
+                                            <%= brand.brand_name %>
+                                        </option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="product_detail" class="form-label">Product Description *</label>
+                                <textarea class="form-control" id="product_detail" name="product_detail" 
+                                          rows="4" required><%= product ? product.product_detail : '' %></textarea>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="product_price" class="form-label">Price (฿) *</label>
+                                    <input type="number" class="form-control" id="product_price" name="product_price" 
+                                           step="0.01" min="0" value="<%= product ? product.product_price : '' %>" required>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="product_qty" class="form-label">Quantity *</label>
+                                    <input type="number" class="form-control" id="product_qty" name="product_qty" 
+                                           min="0" value="<%= product ? product.product_qty : '' %>" required>
+                                </div>
+
+                                <div class="col-md-4 mb-3">
+                                    <label for="product_use" class="form-label">Usage Count</label>
+                                    <input type="number" class="form-control" id="product_use" name="product_use" 
+                                           min="0" value="<%= product ? product.product_use : 0 %>">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="product_image" class="form-label">Product Image</label>
+                                <input type="file" class="form-control" id="product_image" name="product_image" 
+                                       accept="image/*" <%= action === 'add' ? 'required' : '' %>>
+                                <small class="text-muted">Supported formats: JPG, PNG, GIF (Max 5MB)</small>
+                                
+                                <% if(product && product.product_image) { %>
+                                <div class="mt-2">
+                                    <img src="<%= product.product_image %>" alt="Current Image" 
+                                         class="img-thumbnail" style="max-width: 200px;">
+                                    <p class="small text-muted">Current image (will be replaced if new image uploaded)</p>
+                                </div>
+                                <% } %>
+                            </div>
+
+                            <hr>
+
+                            <div class="d-flex justify-content-between">
+                                <a href="/admin/products" class="btn btn-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save"></i> <%= action === 'add' ? 'Add Product' : 'Update Product' %>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

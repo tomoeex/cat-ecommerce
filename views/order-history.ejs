@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <%- include('partials/navbar') %>
+
+    <div class="container my-5">
+        <h1 class="mb-4"><i class="fas fa-history"></i> Order History</h1>
+
+        <% if(orders.length === 0) { %>
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-inbox fa-5x text-muted mb-4"></i>
+                <h3 class="text-muted">No Orders Yet</h3>
+                <p class="text-muted">You haven't placed any orders yet.</p>
+                <a href="/products" class="btn btn-primary btn-lg mt-3">
+                    <i class="fas fa-shopping-bag"></i> Start Shopping
+                </a>
+            </div>
+        </div>
+        <% } else { %>
+        <div class="row">
+            <% orders.forEach(order => { %>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Order #<%= order.order_id %></h5>
+                        <% if(order.order_status === 'paid') { %>
+                            <span class="badge bg-success">Paid</span>
+                        <% } else if(order.order_status === 'preparing') { %>
+                            <span class="badge bg-info">Preparing</span>
+                        <% } else if(order.order_status === 'shipping') { %>
+                            <span class="badge bg-warning">Shipping</span>
+                        <% } else if(order.order_status === 'successful') { %>
+                            <span class="badge bg-primary">Delivered</span>
+                        <% } else if(order.order_status === 'cancelled') { %>
+                            <span class="badge bg-danger">Cancelled</span>
+                        <% } else { %>
+                            <span class="badge bg-secondary"><%= order.order_status %></span>
+                        <% } %>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-6">
+                                <small class="text-muted">Order Date</small><br>
+                                <strong><%= new Date(order.createdAt).toLocaleDateString() %></strong>
+                            </div>
+                            <div class="col-6 text-end">
+                                <small class="text-muted">Total Amount</small><br>
+                                <strong class="text-primary fs-5">฿<%= parseFloat(order.order_total_net).toFixed(2) %></strong>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <small class="text-muted">Items</small><br>
+                            <span class="badge bg-secondary"><%= order.item_count %> items</span>
+                        </div>
+
+                        <% if(order.order_tracking) { %>
+                        <div class="mb-3">
+                            <small class="text-muted">Tracking</small><br>
+                            <code><%= order.order_tracking %></code>
+                        </div>
+                        <% } %>
+
+                        <div class="d-grid gap-2">
+                            <a href="/orders/receipt/<%= order.order_id %>" 
+                               class="btn btn-outline-primary" target="_blank">
+                                <i class="fas fa-file-pdf"></i> Download Receipt
+                            </a>
+                            <% if(order.order_status === 'paid' || order.order_status === 'preparing') { %>
+                            <button class="btn btn-outline-danger" 
+                                    onclick="cancelOrder(<%= order.order_id %>)">
+                                <i class="fas fa-times"></i> Cancel Order
+                            </button>
+                            <% } %>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        <i class="fas fa-clock"></i> 
+                        Last updated: <%= new Date(order.updatedAt || order.createdAt).toLocaleString() %>
+                    </div>
+                </div>
+            </div>
+            <% }); %>
+        </div>
+        <% } %>
+    </div>
+
+    <%- include('partials/footer') %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function cancelOrder(orderId) {
+            if(!confirm('Are you sure you want to cancel this order?')) {
+                return;
+            }
+
+            $.ajax({
+                url: '/orders/cancel/' + orderId,
+                method: 'POST',
+                success: function(response) {
+                    if(response.success) {
+                        alert('Order cancelled successfully');
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Failed to cancel order');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

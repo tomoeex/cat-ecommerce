@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container my-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-file-invoice"></i> Order Details #<%= order.order_id %></h1>
+            <a href="/admin/orders" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Orders
+            </a>
+        </div>
+
+        <div class="row">
+            <!-- Order Information -->
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-info-circle"></i> Order Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Order ID:</strong><br>
+                                <span class="text-primary">#<%= order.order_id %></span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Order Date:</strong><br>
+                                <%= new Date(order.createdAt).toLocaleString() %>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Payment Method:</strong><br>
+                                <%= order.payment_method || 'N/A' %>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Transaction Ref:</strong><br>
+                                <code><%= order.transaction_ref || 'N/A' %></code>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Order Status:</strong><br>
+                                <select class="form-select mt-2" id="orderStatus" onchange="updateStatus()">
+                                    <option value="paid" <%= order.order_status === 'paid' ? 'selected' : '' %>>Paid</option>
+                                    <option value="preparing" <%= order.order_status === 'preparing' ? 'selected' : '' %>>Preparing</option>
+                                    <option value="shipping" <%= order.order_status === 'shipping' ? 'selected' : '' %>>Shipping</option>
+                                    <option value="successful" <%= order.order_status === 'successful' ? 'selected' : '' %>>Delivered</option>
+                                    <option value="cancelled" <%= order.order_status === 'cancelled' ? 'selected' : '' %>>Cancelled</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Tracking Number:</strong><br>
+                                <input type="text" class="form-control mt-2" id="trackingNumber" 
+                                       value="<%= order.order_tracking || '' %>" 
+                                       placeholder="Enter tracking number">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Order Items -->
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-shopping-bag"></i> Order Items</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Product</th>
+                                        <th>Price</th>
+                                        <th>Quantity</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% items.forEach(item => { %>
+                                    <tr>
+                                        <td>
+                                            <img src="<%= item.product_image %>" alt="<%= item.product_name %>" 
+                                                 style="width: 50px; height: 50px; object-fit: cover;"
+                                                 onerror="this.src='https://via.placeholder.com/50x50'">
+                                        </td>
+                                        <td><%= item.product_name %></td>
+                                        <td>฿<%= parseFloat(item.product_price).toFixed(2) %></td>
+                                        <td><%= item.order_qty %></td>
+                                        <td class="fw-bold">฿<%= parseFloat(item.order_subtotal).toFixed(2) %></td>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="4" class="text-end"><strong>Subtotal:</strong></td>
+                                        <td class="fw-bold">฿<%= parseFloat(order.order_total).toFixed(2) %></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-end"><strong>Shipping:</strong></td>
+                                        <td>฿<%= parseFloat(order.order_total_fee).toFixed(2) %></td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4" class="text-end"><strong>Tax (VAT 7%):</strong></td>
+                                        <td>฿<%= parseFloat(order.order_total_fee_vat).toFixed(2) %></td>
+                                    </tr>
+                                    <tr class="table-primary">
+                                        <td colspan="4" class="text-end"><strong>Total:</strong></td>
+                                        <td class="fw-bold fs-5">฿<%= parseFloat(order.order_total_net).toFixed(2) %></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Information -->
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-user"></i> Customer Info</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Name:</strong><br><%= order.user_fullname %></p>
+                        <p><strong>Email:</strong><br><%= order.user_email %></p>
+                        <p><strong>Phone:</strong><br><%= order.user_tel || 'N/A' %></p>
+                        <p><strong>Address:</strong><br><%= order.user_address || 'N/A' %></p>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="card">
+                    <div class="card-header bg-warning">
+                        <h5 class="mb-0"><i class="fas fa-tools"></i> Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="updateStatus()">
+                                <i class="fas fa-save"></i> Save Changes
+                            </button>
+                            <a href="/orders/receipt/<%= order.order_id %>" 
+                               class="btn btn-outline-primary" target="_blank">
+                                <i class="fas fa-file-pdf"></i> View Receipt
+                            </a>
+                            <button class="btn btn-outline-danger" onclick="cancelOrder()">
+                                <i class="fas fa-times"></i> Cancel Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        function updateStatus() {
+            const status = $('#orderStatus').val();
+            const tracking = $('#trackingNumber').val();
+
+            $.ajax({
+                url: '/admin/orders/update-status',
+                method: 'POST',
+                data: { 
+                    order_id: <%= order.order_id %>, 
+                    status: status,
+                    tracking: tracking
+                },
+                success: function(response) {
+                    if(response.success) {
+                        alert('Order updated successfully!');
+                        location.reload();
+                    } else {
+                        alert(response.message || 'Failed to update order');
+                    }
+                },
+                error: function() {
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        }
+
+        function cancelOrder() {
+            if(!confirm('Are you sure you want to cancel this order?')) {
+                return;
+            }
+            $('#orderStatus').val('cancelled');
+            updateStatus();
+        }
+    </script>
+</body>
+</html>

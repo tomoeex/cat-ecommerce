@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <%- include('../partials/navbar') %>
+
+    <div class="container-fluid my-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-2 bg-light py-3">
+                <h5 class="mb-3"><i class="fas fa-cog"></i> Admin Panel</h5>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/products"><i class="fas fa-box"></i> Products</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/orders"><i class="fas fa-shopping-cart"></i> Orders</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/customers"><i class="fas fa-users"></i> Customers</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/categories"><i class="fas fa-tags"></i> Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/brands"><i class="fas fa-certificate"></i> Brands</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/admin/login-logs"><i class="fas fa-history"></i> Login Logs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard/analytics"><i class="fas fa-chart-line"></i> Analytics</a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-10">
+                <h1 class="mb-4"><i class="fas fa-history"></i> Login Activity Logs</h1>
+                <p class="text-muted">Tracking all user login activities (ตามข้อกำหนดข้อ 6.6.6)</p>
+
+                <!-- Stats Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h3><%= logs.length %></h3>
+                                <p class="mb-0">Recent Logins (100)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h3><%= logs.filter(l => l.user_role === 'customer').length %></h3>
+                                <p class="mb-0">Customer Logins</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card bg-warning text-dark">
+                            <div class="card-body text-center">
+                                <h3><%= logs.filter(l => l.user_role === 'admin').length %></h3>
+                                <p class="mb-0">Admin Logins</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Table -->
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Login History (Latest 100 Records)</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Log ID</th>
+                                        <th>Username</th>
+                                        <th>Full Name</th>
+                                        <th>Role</th>
+                                        <th>IP Address</th>
+                                        <th>Login Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% logs.forEach(log => { %>
+                                    <tr>
+                                        <td><small>#<%= log.log_id %></small></td>
+                                        <td><%= log.user_username %></td>
+                                        <td><%= log.user_fullname %></td>
+                                        <td>
+                                            <% if(log.user_role === 'admin') { %>
+                                                <span class="badge bg-danger">Admin</span>
+                                            <% } else { %>
+                                                <span class="badge bg-info">Customer</span>
+                                            <% } %>
+                                        </td>
+                                        <td><code><%= log.ip_address || 'N/A' %></code></td>
+                                        <td>
+                                            <small>
+                                                <i class="fas fa-clock"></i> 
+                                                <%= new Date(log.login_time).toLocaleString() %>
+                                            </small>
+                                        </td>
+                                    </tr>
+                                    <% }); %>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <% if(logs.length === 0) { %>
+                        <div class="text-center py-5">
+                            <i class="fas fa-history fa-4x text-muted mb-3"></i>
+                            <p class="text-muted">No login logs found</p>
+                        </div>
+                        <% } %>
+                    </div>
+                    <div class="card-footer text-muted small">
+                        <i class="fas fa-info-circle"></i> 
+                        Showing the latest 100 login records. All login activities are automatically tracked.
+                    </div>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="alert alert-info mt-4">
+                    <h6><i class="fas fa-shield-alt"></i> Security Information</h6>
+                    <ul class="mb-0 small">
+                        <li>All user login attempts are automatically logged</li>
+                        <li>IP addresses are recorded for security purposes</li>
+                        <li>Logs help track suspicious activities</li>
+                        <li>Data is stored in the <code>user_login_log</code> table</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-refresh every 30 seconds
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>
